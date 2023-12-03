@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const specialChars = [
-    "one",
-    "two",
-    "three",
-    "four",
-    "five",
-    "six",
-    "seven",
-    "eight",
-    "nine",
+    ["one", 1],
+    ["two", 2],
+    ["three", 3],
+    ["four", 4],
+    ["five", 5],
+    ["six", 6],
+    ["seven", 7],
+    ["eight", 8],
+    ["nine", 9],
 ];
 function searchSubString(text, term) {
     let isInString = false;
@@ -27,10 +27,12 @@ function searchSubString(text, term) {
 }
 function getSpecialChars(text) {
     const returnData = [];
-    specialChars.forEach((num) => {
-        const [searchSubStringResult, onIndex] = searchSubString(text, num);
+    specialChars
+        .map((item) => item[0])
+        .forEach((term) => {
+        const [searchSubStringResult, onIndex] = searchSubString(text, term.toString());
         if (searchSubStringResult)
-            returnData.push([num, onIndex]);
+            returnData.push([term.toString(), onIndex]);
     });
     return returnData;
 }
@@ -66,49 +68,77 @@ function getDigit(data, reverse) {
 function calcWhoIsFirst(text, reverse) {
     const indicesSpecialChars = getSpecialChars(text);
     const indexTextChar = indicesSpecialChars.map((index) => index[1]);
-    let indexChar = getDigit(text, reverse)[1];
-    let numItem = 0;
+    let specialCharIndex = undefined;
+    let indexCharLeft = null;
+    let indexCharRight = null;
     if (!reverse) {
-        indexTextChar.forEach((index) => {
-            index < Number(indexChar) ? (numItem = index) : null;
-        });
-        if (indexTextChar.includes(numItem)) {
-            const [num] = indicesSpecialChars.find((item) => item[1] === numItem) || [];
-            return num;
+        indexCharLeft = getDigit(text, false)[1];
+        if (indexTextChar.length > 0)
+            specialCharIndex = indexTextChar.reduce((a, b) => (a < b ? a : b));
+        if (indexCharLeft !== null && specialCharIndex !== undefined) {
+            if (Number(specialCharIndex) < Number(indexCharLeft)) {
+                return indicesSpecialChars
+                    .filter((item) => item[1] === specialCharIndex)
+                    .map((item) => item[0]);
+            }
+            else {
+                return text[Number(indexCharLeft)];
+            }
         }
         else {
-            return text[Number(indexChar)];
+            return indicesSpecialChars
+                .filter((item) => item[1] === specialCharIndex)
+                .map((item) => item[0]);
         }
     }
     else {
-        indexTextChar.forEach((index) => {
-            index > Number(indexChar) ? (numItem = index) : null;
-        });
-        if (indexTextChar.includes(numItem)) {
-            const [num] = indicesSpecialChars.find((item) => item[1] === numItem) || [];
-            return num;
+        indexCharRight = getDigit(text, true)[1];
+        if (indexTextChar.length > 0)
+            specialCharIndex = indexTextChar.reduce((a, b) => (a > b ? a : b));
+        if (indexCharRight !== null && specialCharIndex !== undefined) {
+            if (Number(specialCharIndex) > Number(indexCharRight)) {
+                return indicesSpecialChars
+                    .filter((item) => item[1] === specialCharIndex)
+                    .map((item) => item[0]);
+            }
+            else {
+                return text[Number(indexCharRight)];
+            }
         }
         else {
-            return text[Number(indexChar)];
+            return indicesSpecialChars
+                .filter((item) => item[1] === specialCharIndex)
+                .map((item) => item[0]);
         }
     }
 }
-/* const textData = [
-  "two1nine",
-  "eightwothree",
-  "abcone2threexyz",
-  "xtwone3four",
-  "4nineeightseven2",
-  "zoneight234",
-  "7pqrstsixteen",
+function getSum(textData) {
+    let sum = 0;
+    let numLeft = null;
+    let numRight = null;
+    textData.forEach((line) => {
+        numLeft = calcWhoIsFirst(line, false);
+        numRight = calcWhoIsFirst(line, true);
+        if (isNaN(Number(numLeft)) && numLeft !== undefined)
+            numLeft = specialChars.find((item) => item[0] == numLeft)[1];
+        if (isNaN(Number(numRight)) && numRight !== undefined)
+            numRight = specialChars.find((item) => item[0] == numRight)[1];
+        sum = sum + Number(numLeft.toString() + numRight.toString());
+    });
+    console.log(sum);
+}
+const textData = [
+    "two1nine",
+    "eightwothree",
+    "abcone2threexyz",
+    "xtwone3four",
+    "4nineeightseven2",
+    "zoneight234",
+    "7pqrstsixteen",
+    "1112776667890",
 ];
-textData.forEach((line) => {
-  console.log(calcWhoIsFirst(line, false) + ", " + calcWhoIsFirst(line, true));
-}); */
-console.log(calcWhoIsFirst("zoneight234", false) +
-    ", " +
-    calcWhoIsFirst("zoneight234", true));
-//getDigit("sevenntgvnrrqfvxh2ttnkgffour8fiveone", true);
-//const allNumber = getCalibrationNumbers(inputData);
-//console.log(allNumber.reduce((a: number, b: number) => a + b));
+const textDate2 = ["ninetwonine", "xxonetwonexx", "xxoneightonexx"];
+getSum(textDate2);
+//Aktueller fehler, wenn eine Zahl z. B (one oder nine) öfters in einem String vorkommen,
+//wird das zweite vorkommnis ignoriert.
 //# sourceMappingURL=main.js.map
