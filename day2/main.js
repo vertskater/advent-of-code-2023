@@ -1,5 +1,9 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const getDate_1 = __importDefault(require("./getDate"));
 const specialChars = [
     ["one", 1],
     ["two", 2],
@@ -13,26 +17,29 @@ const specialChars = [
 ];
 function searchSubString(text, term) {
     let isInString = false;
+    const isInStringHistory = [];
     for (let i = 0; i < text.length; i++) {
         for (let j = 0; j < term.length; j++) {
             if (text[i + j] !== term[j])
                 break;
             if (j === term.length - 1) {
                 isInString = true;
-                return [isInString, i];
+                isInStringHistory.push([isInString, i]);
             }
         }
     }
-    return [isInString, -1];
+    return isInStringHistory; //[isInString, -1];
 }
 function getSpecialChars(text) {
     const returnData = [];
     specialChars
         .map((item) => item[0])
         .forEach((term) => {
-        const [searchSubStringResult, onIndex] = searchSubString(text, term.toString());
-        if (searchSubStringResult)
-            returnData.push([term.toString(), onIndex]);
+        const searchSubStringResult = searchSubString(text, term.toString());
+        searchSubStringResult.forEach(([isInString, onIndex]) => {
+            if (isInString)
+                returnData.push([term, onIndex]);
+        });
     });
     return returnData;
 }
@@ -54,17 +61,6 @@ function getDigit(data, reverse) {
     }
     return [null, null];
 }
-/* function getCalibrationNumbers(data: string[]) {
-  let numLeft = "0";
-  let numRight = "0";
-  const allNumbers: number[] = [];
-  data.forEach((line) => {
-    numLeft = getDigit(line, false);
-    numRight = getDigit(line, true);
-    allNumbers.push(+(numLeft + numRight));
-  });
-  return allNumbers;
-} */
 function calcWhoIsFirst(text, reverse) {
     const indicesSpecialChars = getSpecialChars(text);
     const indexTextChar = indicesSpecialChars.map((index) => index[1]);
@@ -75,7 +71,7 @@ function calcWhoIsFirst(text, reverse) {
         indexCharLeft = getDigit(text, false)[1];
         if (indexTextChar.length > 0)
             specialCharIndex = indexTextChar.reduce((a, b) => (a < b ? a : b));
-        if (indexCharLeft !== null && specialCharIndex !== undefined) {
+        if (indexCharLeft !== null) {
             if (Number(specialCharIndex) < Number(indexCharLeft)) {
                 return indicesSpecialChars
                     .filter((item) => item[1] === specialCharIndex)
@@ -95,7 +91,7 @@ function calcWhoIsFirst(text, reverse) {
         indexCharRight = getDigit(text, true)[1];
         if (indexTextChar.length > 0)
             specialCharIndex = indexTextChar.reduce((a, b) => (a > b ? a : b));
-        if (indexCharRight !== null && specialCharIndex !== undefined) {
+        if (indexCharRight !== null) {
             if (Number(specialCharIndex) > Number(indexCharRight)) {
                 return indicesSpecialChars
                     .filter((item) => item[1] === specialCharIndex)
@@ -127,18 +123,5 @@ function getSum(textData) {
     });
     console.log(sum);
 }
-const textData = [
-    "two1nine",
-    "eightwothree",
-    "abcone2threexyz",
-    "xtwone3four",
-    "4nineeightseven2",
-    "zoneight234",
-    "7pqrstsixteen",
-    "1112776667890",
-];
-const textDate2 = ["ninetwonine", "xxonetwonexx", "xxoneightonexx"];
-getSum(textDate2);
-//Aktueller fehler, wenn eine Zahl z. B (one oder nine) öfters in einem String vorkommen,
-//wird das zweite vorkommnis ignoriert.
+getSum(getDate_1.default);
 //# sourceMappingURL=main.js.map
